@@ -1,0 +1,86 @@
+version: "3"
+
+networks:
+  public:
+  private:
+
+services:
+  nginx_api-1:
+    image: nginx:stable-alpine
+    container_name: web_public
+    ports:
+     - "80:80"
+     - "443:443" 
+    volumes:
+     - ./devops-test/api-1:/var/www/html/
+     - ./nginx/api-1/conf.d/:/etc/nginx/conf.d/
+     - ./nginx/cert.pem:/etc/ssl/certs/cert.pem
+     - ./nginx/key.pem:/etc/ssl/private/key.pem
+    networks:
+      - public
+      - private
+    depends_on:
+      - mysql
+      - php_api-1
+      - php_api-2
+
+  nginx_api-2:
+    image: nginx:stable-alpine
+    container_name: web_private
+    volumes:
+     - ./devops-test/api-2:/var/www/html/
+     - ./nginx/api-2/conf.d/:/etc/nginx/conf.d/
+    networks:
+      - private
+    depends_on:
+      - php_api-2
+
+  mysql:
+    image: mysql:5.7
+    container_name: mysql
+    restart: unless-stopped
+    volumes:
+     - ./mysql:/var/lib/mysql
+    networks:
+     - private
+    environment:
+     MYSQL_DATABASE: my_db
+     MYSQL_USER: root
+     MYSQL_PASSWORD: test
+     MYSQL_ROOT_PASSWORD: test
+
+  php_api-1:
+    container_name: api-1
+    build:
+      context: ./docker/
+      dockerfile: api.Dockerfile
+    volumes:
+      - ./devops-test/api-1:/var/www/html/
+    networks:
+     - private
+
+  php_api-2:
+    container_name: api-2
+    build:
+      context: ./docker/
+      dockerfile: api.Dockerfile
+    volumes:
+      - ./devops-test/api-2:/var/www/html/
+    networks:
+     - private
+  
+  composer_api-1:
+    image: composer:1.9
+    command: ["composer", "install"]
+    networks:
+     - private
+    volumes:
+      - ./devops-test/api-1:/app
+
+  composer_api-2:
+    image: composer:1.9
+    command: ["composer", "install"]
+    networks:
+     - private
+    volumes:
+      - ./devops-test/api-2:/app
