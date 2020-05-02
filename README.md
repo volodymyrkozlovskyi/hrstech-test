@@ -19,7 +19,7 @@ I decided to go with separate containers for each service, in my opinion this is
 
 To launch this in production we go different ways, I will talk about possible solutions in AWS:
 
-1) We can just simply launch this docker compose on our EC2 with public IP, andin Route 53 service we can forward our 	domain/subdomain to our EC2.
+1) We can just simply launch this docker compose on our EC2 with public IP, and in Route 53 service we can forward our 	domain/subdomain to our EC2.
 
 2) Assuming that the first solution is not that good if on the same EC2 instance we have different public containers. And they will be accessible from outside under different subdomains. In addition to solution 1 we need to configure reverse in front that will later forward our requests to different ports on containers. In that case we need to modify our docker compose to forward containers ports to something else but not 80 and 443 or other reserved ports.
 
